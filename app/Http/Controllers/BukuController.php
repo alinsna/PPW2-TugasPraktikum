@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Buku;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class BukuController extends Controller
 {
@@ -41,14 +42,34 @@ class BukuController extends Controller
      */
     public function store(Request $request)
     {
-        $buku = new Buku();
-        $buku->judul = $request->judul;
-        $buku->penulis = $request->penulis;
-        $buku->harga = $request->harga;
-        $buku->tanggal_terbit = $request->tanggal_terbit;
-        $buku->save();
+    $request->validate([
+        'judul' => 'required|string|max:255',
+        'penulis' => 'required|string|max:255',
+        'harga' => 'required|numeric',
+        'tanggal_terbit' => 'required|date',
+        'photo' => 'image|nullable|max:1999',
+    ]);
 
-        return redirect('/buku');
+    $buku = new Buku();
+    $buku->judul = $request->judul;
+    $buku->penulis = $request->penulis;
+    $buku->harga = $request->harga;
+    $buku->tanggal_terbit = $request->tanggal_terbit;
+    $buku->photo = $path ?? null;
+
+    if ($request->hasFile('photo')) {
+        $filenameWithExt = $request->file('photo')->getClientOriginalName();
+        $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+        $extension = $request->file('photo')->getClientOriginalExtension();
+        $filenameSimpan = $filename . '_' . time() . '.' . $extension;
+
+        $path = $request->file('photo')->storeAs('public/photos', $filenameSimpan);
+        $buku->photo = $filenameSimpan;
+    }
+
+    $buku->save();
+
+    return redirect('/buku')->with('success', 'Buku berhasil ditambahkan.');
     }
 
     /**
@@ -73,22 +94,32 @@ class BukuController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $request->validate([
-            'judul' => 'required|string|max:255',
-            'penulis' => 'required|string|max:255',
-            'harga' => 'required|numeric',
-            'tanggal_terbit' => 'required|date',
-        ]);
+    $request->validate([
+        'judul' => 'required|string|max:255',
+        'penulis' => 'required|string|max:255',
+        'harga' => 'required|numeric',
+        'tanggal_terbit' => 'required|date',
+        'photo' => 'image|nullable|max:1999',
+    ]);
 
-        $buku = Buku::find($id);
+    $buku = Buku::find($id);
 
-        $buku->judul = $request->judul;
-        $buku->penulis = $request->penulis;
-        $buku->harga = $request->harga;
-        $buku->tanggal_terbit = $request->tanggal_terbit;
-        $buku->save();
+    if ($request->hasFile('photo')) {
+        if ($buku->photo) {
+            Storage::delete('public/photos/' . $buku->photo);
+        }
 
-        return redirect()->route('buku.index')->with('success', 'Buku berhasil diupdate.');
+        $filename = $request->file('photo')->store('public/photos');
+        $buku->photo = basename($filename);
+    }
+
+    $buku->judul = $request->judul;
+    $buku->penulis = $request->penulis;
+    $buku->harga = $request->harga;
+    $buku->tanggal_terbit = $request->tanggal_terbit;
+    $buku->save();
+
+    return redirect()->route('buku.index')->with('success', 'Buku berhasil diupdate.');
     }
 
     /**
