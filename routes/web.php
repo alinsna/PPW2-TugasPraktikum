@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginRegisterController;
 use App\Http\Controllers\BukuController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\SendEmailController;
 
 /*
 |---------------------------------------------------------------------------
@@ -52,3 +53,8 @@ Route::middleware(['auth', 'admin'])->group(function() {
 Route::get('restricted', function() {
     return redirect(route('dashboard'))->with('success', 'Anda berusia lebih dari 18 tahun!');
 })->middleware('checkage');
+
+Route::get('/send-email', [SendEmailController::class, 'index'])->name('send-email');
+
+Route::post('/post-email', [SendEmailController::class, 'store'])->name('post-email');
+

@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Mail\UserRegisteredEmail;
+use Illuminate\Support\Facades\Mail;
 
 class LoginRegisterController extends Controller
 {
@@ -47,6 +49,8 @@ class LoginRegisterController extends Controller
         $credentials = $request->only('email', 'password');
         Auth::attempt($credentials);
         $request->session()->regenerate();
+
+        Mail::to($request->email)->send(new UserRegisteredEmail($request->only('email', 'name')));
         
         return redirect()->route('buku.index')
             ->with('success', 'You have successfully registered & logged in!');
