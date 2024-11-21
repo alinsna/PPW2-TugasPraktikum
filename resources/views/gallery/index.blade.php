@@ -54,5 +54,36 @@
         return confirm('Apakah yakin akan dihapus?');
     }
 </script>
+
+<script>
+    async function fetchGallery() {
+        const response = await fetch('/api/gallery');
+        const data = await response.json();
+        const galleryList = document.getElementById('gallery-list');
+        galleryList.innerHTML = '';
+
+        if (data.data.length > 0) {
+            data.data.forEach(gallery => {
+                const col = document.createElement('div');
+                col.classList.add('col-sm-2');
+                col.innerHTML = `
+                    <div>
+                        <a class="example-image-link" href="/storage/posts_image/${gallery.picture}" 
+                            data-lightbox="roadtrip" data-title="${gallery.description}">
+                            <img class="example-image img-fluid mb-2" src="/storage/posts_image/${gallery.picture}" 
+                            alt="image-1"/>
+                        </a>
+                    </div>
+                `;
+                galleryList.appendChild(col);
+            });
+        } else {
+            galleryList.innerHTML = '<h3>Tidak ada data.</h3>';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchGallery);
+</script>
+
 @endsection
 

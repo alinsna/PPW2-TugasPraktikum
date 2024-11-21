@@ -6,7 +6,44 @@ use Illuminate\Http\Request;
 use App\Models\Post;
 
 class GalleryController extends Controller
+
+/**
+* @OA\Get(
+*     path="/api/gallery",
+*     tags={"Gallery"},
+*     summary="Fetch gallery posts",
+*     description="Menampilkan daftar postingan dengan gambar",
+*     operationId="getGallery",
+*     @OA\Response(
+*         response=200,
+*         description="Berhasil menampilkan data",
+*         @OA\JsonContent(
+*             type="array",
+*             @OA\Items(
+*                 @OA\Property(property="id", type="integer", example=1),
+*                 @OA\Property(property="title", type="string", example="Judul Postingan"),
+*                 @OA\Property(property="picture", type="string", example="url_gambar.jpg")
+*             )
+*         )
+*     )
+* )
+*/
+
+
 {
+    /**
+     * Menampilkan data gallery dalam format JSON.
+     */
+    public function apiIndex()
+    {
+        $galleries = Post::where('picture', '!=', '')
+            ->whereNotNull('picture')
+            ->orderBy('created_at', 'desc')
+            ->paginate(30);
+
+        return response()->json($galleries, 200);
+    }
+
     /**
      * Display a listing of the resource.
      */
